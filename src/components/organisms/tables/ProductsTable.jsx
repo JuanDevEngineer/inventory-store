@@ -10,7 +10,8 @@ import {
 } from '@tanstack/react-table';
 import Swal from 'sweetalert2';
 import { FaArrowsAltV } from 'react-icons/fa';
-import { TableActionsContent, Pagination, useProductsStore } from '../../../index';
+import { TableActionsContent, Pagination } from '../../../index';
+import { useDeleteProduct } from '../../../hooks/queries/useProducts';
 import { v } from '../../../styles/variables';
 import { Device } from '../../../styles/breakpoints';
 
@@ -24,7 +25,7 @@ export function ProductsTable({
   const [, setData] = useState(data);
   const [columnFilters] = useState([]);
 
-  const { deleteProduct } = useProductsStore();
+  const deleteProduct = useDeleteProduct();
   function handleDelete(p) {
     Swal.fire({
       title: '¿Estás seguro(a)(e)?',
@@ -36,7 +37,7 @@ export function ProductsTable({
       confirmButtonText: 'Si, eliminar',
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await deleteProduct({ id: p });
+        await deleteProduct.mutateAsync({ id: p });
       }
     });
   }

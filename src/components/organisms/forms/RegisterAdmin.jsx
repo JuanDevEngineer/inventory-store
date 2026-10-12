@@ -1,41 +1,38 @@
 import styled from "styled-components";
 import { v } from "../../../styles/variables";
-import { InputText, BtnSave, useUsersStore } from "../../../index";
+import { InputText, BtnSave } from "../../../index";
 import { useForm } from "react-hook-form";
 import { MdAlternateEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
-import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { useRegisterAdmin } from "../../../hooks/queries/useStaff";
 export function RegisterAdmin({
   setState
 }) {
-  const { insertAdminUser } = useUsersStore();
+  const registerAdmin = useRegisterAdmin();
   const navigate = useNavigate();
   const {
     register,
     formState: { errors },
     handleSubmit,
   } = useForm();
-  const mutation = useMutation({
-    mutationFn: async (data) => {
-      const p = {
-        email: data.email,
-        password:data.password,
-        user_type:"superadmin"
-      }; 
-      const dt =   await insertAdminUser(p);
-      if (dt) {
-        navigate("/");
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "No se pudo crear la cuenta. Verifica el correo y que la contraseña tenga al menos 6 caracteres.",
-        });
-      }
-    },
-  });
+  async function handleSave(data) {
+    const user = await registerAdmin.mutateAsync({
+      email: data.email,
+      password: data.password,
+      user_type: "superadmin",
+    });
+    if (user) {
+      navigate("/");
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "No se pudo crear la cuenta. Verifica el correo y que la contraseña tenga al menos 6 caracteres.",
+      });
+    }
+  }
   return (
     <Container>
       <ContentClose >
@@ -50,7 +47,7 @@ export function RegisterAdmin({
 
       </div>
 
-      <form className="form" onSubmit={handleSubmit(mutation.mutateAsync)}>
+      <form className="form" onSubmit={handleSubmit(handleSave)}>
         <section>
           <article>
             <InputText icon={<MdAlternateEmail />}>

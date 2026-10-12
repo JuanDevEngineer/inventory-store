@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { v } from "../../../styles/variables";
-import { InputText, Spinner, BtnSave, useCategoriesStore } from "../../../index";
+import { InputText, Spinner, BtnSave } from "../../../index";
 import { useForm } from "react-hook-form";
 import { CirclePicker } from "react-color";
-import { useCompanyStore } from "../../../store/CompanyStore";
+import { useCurrentCompany } from "../../../hooks/queries/useSession";
+import { useCreateCategory, useUpdateCategory } from "../../../hooks/queries/useCategories";
 
 export function RegisterCategory({ onClose, dataSelect, action }) {
-  const { insertCategory, editCategory } = useCategoriesStore();
-  const { companyData } = useCompanyStore();
+  const createCategory = useCreateCategory();
+  const updateCategory = useUpdateCategory();
+  const { data: companyData } = useCurrentCompany();
   const [currentColor, setColor] = useState("#F44336");
   const [isProcessing, setIsProcessing] = useState(false);
   function pickColor(color) {
@@ -25,21 +27,21 @@ export function RegisterCategory({ onClose, dataSelect, action }) {
         id: dataSelect.id,
         description: data.description,
         color: currentColor,
-        company_id: companyData.id,
+        company_id: companyData?.id,
       };
       setIsProcessing(true);
-      await editCategory(p);
+      await updateCategory.mutateAsync(p);
       setIsProcessing(false);
       onClose();
     } else {
       const p = {
         _description: data.description,
         _color: currentColor,
-        _company_id: companyData.id,
+        _company_id: companyData?.id,
       };
 
       setIsProcessing(true);
-      await insertCategory(p);
+      await createCategory.mutateAsync(p);
       setIsProcessing(false);
       onClose();
     }

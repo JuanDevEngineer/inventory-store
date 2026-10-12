@@ -4,13 +4,11 @@ import {
   v,
   useAuthStore,
   InputText,
-  useUsersStore,
   RegisterAdmin,
   LoginFooter,
 } from "../../index";
 import {Device} from "../../styles/breakpoints"
 import stars from "../../assets/stars.svg";
-import { useMutation } from "@tanstack/react-query";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -23,23 +21,12 @@ export function LoginTemplate() {
     setTheme
   } = useContext(ThemeContext);
   setTheme("light")
-  const { insertUser } = useUsersStore();
   const { signInWithEmail } = useAuthStore();
   const [state, setState] = useState(false);
   const [, setEmail] = useState("");
   const [, setPassword] = useState("");
   const [stateLoginError, setStateLoginError] = useState(false);
   const navigate = useNavigate();
-
-  useMutation({
-    mutationFn: async () => {
-      const p = {
-        email: "frank@gmail.com",
-        password: "gTh1238",
-      };
-      await insertUser(p);
-    },
-  });
 
   const {
     register,

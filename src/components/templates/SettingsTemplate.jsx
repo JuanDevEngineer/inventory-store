@@ -2,16 +2,23 @@ import styled from "styled-components";
 import gridBackground from "../../assets/grid-background.svg";
 import { Link } from "react-router-dom";
 import { SettingsModulesData } from "../../utils/staticData";
-import { useState } from "react";
 import { Message } from "../molecules/Message";
+import { usePermissions } from "../../hooks/queries/useSession";
 export function SettingsTemplate() {
-  useState(false);
+  const { data: permissions = [] } = usePermissions();
+  // a card is enabled when the user has the module with the same title
+  const modules = SettingsModulesData.map((item) => ({
+    ...item,
+    state: permissions.some((permission) =>
+      permission.modules.name.includes(item.title),
+    ),
+  }));
 
   return (
     <Container>
 
       <div id="cards">
-        {SettingsModulesData.map((item, index) => {
+        {modules.map((item, index) => {
           return (
             <Link to={item.state?item.link:""} className={item.state?"card": "card false"} key={index}>
 

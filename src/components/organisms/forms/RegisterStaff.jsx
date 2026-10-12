@@ -4,30 +4,27 @@ import { v } from "../../../styles/variables";
 import {
   InputText,
   BtnSave,
-  useUsersStore,
   Selector,
   GenericList,
   ModulesList,
   UserTypeData,
   DocumentTypeData,
-  usePermissionsStore,
 } from "../../../index";
 import { useForm } from "react-hook-form";
-import { useCompanyStore } from "../../../store/CompanyStore";
+import { useCurrentCompany, usePermissions } from "../../../hooks/queries/useSession";
+import { useCreateStaff, useUpdateStaff } from "../../../hooks/queries/useStaff";
 import { Device } from "../../../styles/breakpoints";
-import { useQuery } from "@tanstack/react-query";
 
 export function RegisterStaff({
   onClose,
   dataSelect,
   action
 }) {
-  const { insertUser, editUser } = useUsersStore();
-  const { companyData } = useCompanyStore();
+  const createStaff = useCreateStaff();
+  const updateStaff = useUpdateStaff();
+  const { data: companyData } = useCurrentCompany();
   const [stateBrand, setStateBrand] = useState(false);
   const [stateCategory, setStateCategory] = useState(false);
-  useState(false);
-  useState(false);
   const [subAction] = useState("");
   const [checkboxes, setCheckboxes] = useState([]);
   const [userType, setUserType] = useState({
@@ -35,15 +32,10 @@ export function RegisterStaff({
     description: "empleado",
   });
   const [documentType, setDocumentType] = useState({ icon: "", description: "dni" });
-  const {
-    fetchPermissionsEdit
-  } = usePermissionsStore();
-
-  const { isLoading } = useQuery({
-    queryKey: ["fetch permissions edit", { user_id: dataSelect.id }],
-    queryFn: () => fetchPermissionsEdit({ user_id: dataSelect.id }),
-    enabled: dataSelect.id != null,
-  });
+  // permissions of the user being edited (none for a new user)
+  const { data: userPermissions, isLoading } = usePermissions(
+    action === "Edit" ? dataSelect.id : null,
+  );
 
   const {
     register,
@@ -67,7 +59,7 @@ export function RegisterStaff({
         document_type: documentType.description,
 
       };
-      await editUser(p, checkboxes, companyData.id);
+      await updateStaff.mutateAsync({ user: p, permissionChecks: checkboxes });
 
       onClose();
     } else {
@@ -80,13 +72,13 @@ export function RegisterStaff({
         status: "activo",
         user_type: userType.description,
         document_type: documentType.description,
-        company_id: companyData.id,
+        company_id: companyData?.id,
       };
       const authParams = {
         email: data.email,
         password: data.password,
       };
-      await insertUser(authParams, p, checkboxes);
+      await createStaff.mutateAsync({ authParams, user: p, permissionChecks: checkboxes });
 
       onClose();
     }
@@ -273,7 +265,7 @@ export function RegisterStaff({
               action={action}
               setCheckboxes={setCheckboxes}
               checkboxes={checkboxes}
-              userType={userType}
+              userPermissions={userPermissions}
             />
 
           </section>

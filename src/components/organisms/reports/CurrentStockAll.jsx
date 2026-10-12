@@ -1,16 +1,11 @@
 import styled from "styled-components";
 import { Document, Page, Text, View, StyleSheet, PDFViewer } from "@react-pdf/renderer";
-import { useCompanyStore, useProductsStore } from "../../../index";
-import { useQuery } from "@tanstack/react-query";
+import { useCurrentCompany } from "../../../hooks/queries/useSession";
+import { useStockAllReport } from "../../../hooks/queries/useReports";
 
 function CurrentStockAll() {
-  const { reportStockAllProducts } = useProductsStore();
-  const { companyData } = useCompanyStore();
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["stock all report", { company_id: companyData?.id }],
-    queryFn: () => reportStockAllProducts({ company_id: companyData?.id }),
-    enabled: !!companyData?.id,
-  });
+  const { data: companyData } = useCurrentCompany();
+  const { data, isLoading, error } = useStockAllReport(companyData?.id);
   if (isLoading) {
     return <span>cargando</span>;
   }

@@ -1,27 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { v } from "../../../styles/variables";
 import {
   InputText,
   BtnSave,
-  useUsersStore,
   SearchBar,
   useProductsStore,
   GenericList,
 } from "../../../index";
 import { useForm } from "react-hook-form";
-import { useCompanyStore } from "../../../store/CompanyStore";
-import { useKardexStore } from "../../../store/KardexStore";
+import { useCurrentCompany, useCurrentUser } from "../../../hooks/queries/useSession";
+import { useProducts } from "../../../hooks/queries/useProducts";
+import { useCreateKardexMovement } from "../../../hooks/queries/useKardex";
 
 export function RegisterEntryExit({ onClose, dataSelect, action, type }) {
-  const { userId } = useUsersStore();
   const [stateProductList, setStateProductList] = useState(false);
-  const [, setFocused] = useState(false);
-  const { productsData, selectedProduct, selectProduct, setSearch } =
-    useProductsStore();
-
-  const { insertKardex } = useKardexStore();
-  const { companyData } = useCompanyStore();
+  const { search, selectedProduct, selectProduct, setSearch } = useProductsStore();
+  const createMovement = useCreateKardexMovement();
+  const { data: currentUser } = useCurrentUser();
+  const { data: companyData } = useCurrentCompany();
+  const { data: products = [] } = useProducts(companyData?.id, search);
+  // every movement starts with no product selected
+  useEffect(() => {
+    selectProduct([]);
+  }, [selectProduct]);
   const {
     register,
     formState: { errors },
@@ -33,13 +35,13 @@ export function RegisterEntryExit({ onClose, dataSelect, action, type }) {
       const p = {
         date: new Date(),
         type: type,
-        user_id: userId,
+        user_id: currentUser?.id,
         product_id: selectedProduct.id,
         quantity:parseFloat( data.quantity),
         detail: data.detail,
-        company_id:companyData.id
+        company_id:companyData?.id
       };
-      await insertKardex(p);
+      await createMovement.mutateAsync(p);
       onClose();
     }
   }
@@ -58,10 +60,7 @@ export function RegisterEntryExit({ onClose, dataSelect, action, type }) {
         </div>
         <div className="searchContent">
           <div onClick={() => setStateProductList(!stateProductList)}>
-            <SearchBar
-              setSearch={setSearch}
-              onFocus={() => setFocused(true)}
-            />
+            <SearchBar setSearch={setSearch} />
           </div>
 
           {stateProductList && (
@@ -69,7 +68,7 @@ export function RegisterEntryExit({ onClose, dataSelect, action, type }) {
               bottom="-250px"
               scroll="scroll"
               setState={() => setStateProductList(!stateProductList)}
-              data={productsData}
+              data={products}
               onClick={selectProduct}
             />
           )}

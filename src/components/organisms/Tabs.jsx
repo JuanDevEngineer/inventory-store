@@ -6,12 +6,16 @@ import {
   useKardexStore,
 } from "../../index";
 import {Device} from "../../styles/breakpoints"
+import { useKardex } from "../../hooks/queries/useKardex";
+import { useCurrentCompany } from "../../hooks/queries/useSession";
 export function Tabs() {
   const [activeTab, setActiveTab] = useState(0);
   const handleClick = (index) => {
     setActiveTab(index);
   };
-  const {kardexData} = useKardexStore()
+  const { search } = useKardexStore();
+  const { data: company } = useCurrentCompany();
+  const { data: kardexData = [] } = useKardex(company?.id, search);
   return (
     <Container className="container" activeTab={`${activeTab}00%`}>
       <ul className="tabs">

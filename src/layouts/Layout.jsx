@@ -1,43 +1,23 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { useQuery } from '@tanstack/react-query';
-
 import { Sidebar } from '../components/organisms/sidebar/Sidebar';
 import { MobileMenu } from '../components/organisms/MobileMenu';
 import { SpinnerLoader } from '../components/molecules/SpinnerLoader';
 import { Device } from '../styles/breakpoints';
-
-import { usePermissionsStore } from '../store/PermissionsStore';
-import { useCompanyStore } from '../store/CompanyStore';
-import { useUsersStore } from '../store/UsersStore';
+import {
+  useCurrentCompany,
+  useCurrentUser,
+  usePermissions,
+} from '../hooks/queries/useSession';
 
 export function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { fetchUser, userData } = useUsersStore();
-  const { fetchCompany } = useCompanyStore();
-  const { fetchPermissions } = usePermissionsStore();
-  const {
-    data: user,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['fetch user'],
-    queryFn: () => fetchUser(),
-  });
+  const { isPending, error } = useCurrentUser();
+  // start loading the company and permissions every page needs
+  useCurrentCompany();
+  usePermissions();
 
-  useQuery({
-    queryKey: ['fetch company', { userId: userData?.id }],
-    queryFn: () => fetchCompany({ userId: userData?.id }),
-    enabled: !!user,
-  });
-
-  useQuery({
-    queryKey: ['fetch permissions', { user_id: userData?.id }],
-    queryFn: () => fetchPermissions({ user_id: userData?.id }),
-    enabled: !!user,
-  });
-
-  if (isLoading == true) {
+  if (isPending) {
     return <SpinnerLoader />;
   }
   if (error) {

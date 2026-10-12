@@ -6,14 +6,14 @@ import {
   Title,
   LottieAnimation,
   SearchBar,
-  useBrandsStore,
   RegisterStaff,
   StaffTable,
 } from "../../index";
 import { useState } from "react";
 import emptyAnimation from "../../assets/empty.json";
+import { useStaffStore } from "../../store/StaffStore";
 export function StaffTemplate({data}) {
-  const {setSearch} = useBrandsStore();
+  const {setSearch} = useStaffStore();
   const [state, setState] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [action, setAction] = useState("");

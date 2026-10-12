@@ -6,7 +6,6 @@ import {
   BtnSave,
   useCategoriesStore,
   Selector,
-  useProductsStore,
   useBrandsStore,
   GenericList,
   BtnFilter,
@@ -14,14 +13,19 @@ import {
   RegisterCategory,
 } from "../../../index";
 import { useForm } from "react-hook-form";
-import { useCompanyStore } from "../../../store/CompanyStore";
+import { useCurrentCompany } from "../../../hooks/queries/useSession";
 import { Device } from "../../../styles/breakpoints";
+import { useBrands } from "../../../hooks/queries/useBrands";
+import { useCategories } from "../../../hooks/queries/useCategories";
+import { useCreateProduct, useUpdateProduct } from "../../../hooks/queries/useProducts";
 export function RegisterProduct({ onClose, dataSelect, action }) {
-  const { insertProduct, editProduct } = useProductsStore();
-  const { brandsData, selectBrand, selectedBrand } = useBrandsStore();
-  const { categoriesData, selectedCategory, selectCategory } =
-    useCategoriesStore();
-  const { companyData } = useCompanyStore();
+  const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
+  const { selectBrand, selectedBrand } = useBrandsStore();
+  const { selectedCategory, selectCategory } = useCategoriesStore();
+  const { data: companyData } = useCurrentCompany();
+  const { data: brands = [] } = useBrands(companyData?.id);
+  const { data: categories = [] } = useCategories(companyData?.id);
   const [stateBrand, setStateBrand] = useState(false);
   const [stateCategory, setStateCategory] = useState(false);
   const [isBrandFormOpen, setIsBrandFormOpen] = useState(false);
@@ -57,10 +61,10 @@ export function RegisterProduct({ onClose, dataSelect, action }) {
         sale_price: parseFloat(data.sale_price),
         purchase_price: parseFloat(data.purchase_price),
         category_id: selectedCategory.id,
-        company_id: companyData.id,
+        company_id: companyData?.id,
       };
 
-      await editProduct(p);
+      await updateProduct.mutateAsync(p);
 
       onClose();
     } else {
@@ -77,7 +81,7 @@ export function RegisterProduct({ onClose, dataSelect, action }) {
         _company_id: companyData?.id,
       };
 
-      await insertProduct(p);
+      await createProduct.mutateAsync(p);
       onClose();
     }
   }
@@ -87,6 +91,17 @@ export function RegisterProduct({ onClose, dataSelect, action }) {
       selectCategory({id:dataSelect.category_id,description:dataSelect.category})
     }
   }, [action, dataSelect.brand_id, dataSelect.brand, dataSelect.category_id, dataSelect.category, selectBrand, selectCategory]);
+  // a new product starts with the first brand and category selected
+  useEffect(() => {
+    if (action !== "Edit" && !selectedBrand?.id && brands.length > 0) {
+      selectBrand(brands[0]);
+    }
+  }, [action, brands, selectedBrand, selectBrand]);
+  useEffect(() => {
+    if (action !== "Edit" && !selectedCategory?.id && categories.length > 0) {
+      selectCategory(categories[0]);
+    }
+  }, [action, categories, selectedCategory, selectCategory]);
   return (
     <Container>
      
@@ -144,7 +159,7 @@ export function RegisterProduct({ onClose, dataSelect, action }) {
                   bottom="-260px"
                   scroll="scroll"
                   setState={() => setStateBrand(!stateBrand)}
-                  data={brandsData}
+                  data={brands}
                   onClick={selectBrand}
                 />
               )}
@@ -208,7 +223,7 @@ export function RegisterProduct({ onClose, dataSelect, action }) {
                   bottom="50px"
                   scroll="scroll"
                   setState={() => setStateCategory(!stateCategory)}
-                  data={categoriesData}
+                  data={categories}
                   onClick={selectCategory}
                 />
               )}

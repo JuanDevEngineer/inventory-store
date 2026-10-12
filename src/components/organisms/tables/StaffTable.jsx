@@ -1,9 +1,9 @@
 import styled from "styled-components";
 import {
   TableActionsContent,
-  useCategoriesStore,
   Pagination,
 } from "../../../index";
+import { useDeleteStaff } from "../../../hooks/queries/useStaff";
 import Swal from "sweetalert2";
 import { v } from "../../../styles/variables";
 import { useState } from "react";
@@ -26,7 +26,7 @@ export function StaffTable({
   const [, setData] = useState(data);
   const [columnFilters] = useState([]);
 
-  const { deleteCategory } = useCategoriesStore();
+  const deleteStaff = useDeleteStaff();
   function handleDelete(p) {
     Swal.fire({
       title: "¿Estás seguro(a)(e)?",
@@ -38,7 +38,7 @@ export function StaffTable({
       confirmButtonText: "Si, eliminar",
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await deleteCategory({ id: p });
+        await deleteStaff.mutateAsync({ id: p });
       }
     });
   }

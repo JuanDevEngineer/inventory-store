@@ -1,11 +1,12 @@
 import styled from "styled-components";
 import { BtnSave } from "../molecules/BtnSave";
 import { v } from "../../styles/variables";
-import { useCategoriesStore, useUsersStore } from "../../index";
 import Swal from "sweetalert2";
+import { useDeleteAllCategories } from "../../hooks/queries/useCategories";
+import { useCurrentUser } from "../../hooks/queries/useSession";
 export function DeleteDataCard() {
-  const { deleteAllCategories } = useCategoriesStore();
-  const { userData } = useUsersStore();
+  const deleteAllCategories = useDeleteAllCategories();
+  const { data: userData } = useCurrentUser();
   const handleDelete = async () => {
     Swal.fire({
       title: "¿Estás seguro(a)(e)?",
@@ -18,9 +19,9 @@ export function DeleteDataCard() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         const p = {
-          userId: userData.id,
+          userId: userData?.id,
         };
-        await deleteAllCategories(p);
+        await deleteAllCategories.mutateAsync(p);
       }
     });
   };

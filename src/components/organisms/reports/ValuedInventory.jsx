@@ -1,16 +1,11 @@
 import styled from "styled-components";
 import { Document, Page, Text, View, StyleSheet, PDFViewer } from "@react-pdf/renderer";
-import { useCompanyStore, useProductsStore } from "../../../index";
-import { useQuery } from "@tanstack/react-query";
+import { useCurrentCompany } from "../../../hooks/queries/useSession";
+import { useValuedInventoryReport } from "../../../hooks/queries/useReports";
 
 function ValuedInventory() {
-  const { reportValuedInventory } = useProductsStore();
-  const { companyData } = useCompanyStore();
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["valued inventory report", { _company_id: companyData?.id }],
-    queryFn: () => reportValuedInventory({ _company_id: companyData?.id }),
-    enabled: !!companyData?.id,
-  });
+  const { data: companyData } = useCurrentCompany();
+  const { data, isLoading, error } = useValuedInventoryReport(companyData?.id);
   if (isLoading) {
     return <span>cargando</span>;
   }

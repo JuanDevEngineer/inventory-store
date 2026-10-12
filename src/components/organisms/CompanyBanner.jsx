@@ -3,17 +3,18 @@ import { CompanyDataCard } from '../molecules/CompanyDataCard';
 import gridBackground from '../../assets/grid-background.svg';
 import { v } from '../../styles/variables';
 import { Device } from '../../styles/breakpoints';
-import { useCompanyStore } from '../../store/CompanyStore';
+import { useCompanyUserCount, useCurrentCompany } from '../../hooks/queries/useSession';
 
 export function CompanyBanner() {
-  const { companyData, userCount } = useCompanyStore();
+  const { data: companyData } = useCurrentCompany();
+  const { data: userCount } = useCompanyUserCount(companyData?.id);
   return (
     <>
       <Container>
         <div className="content-wrapper-context">
           <span className="title">
             {<v.iconCompany />}
-            {companyData.name}
+            {companyData?.name}
           </span>
           <div className="content-text">
             StockPRO te mantiene siempre informado.

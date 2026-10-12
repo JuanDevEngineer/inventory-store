@@ -1,13 +1,14 @@
 import styled from "styled-components";
 import { v } from "../../../styles/variables";
-import { InputText, BtnSave, useBrandsStore } from "../../../index";
+import { InputText, BtnSave } from "../../../index";
 import { useForm } from "react-hook-form";
-import { useCompanyStore } from "../../../store/CompanyStore";
+import { useCurrentCompany } from "../../../hooks/queries/useSession";
+import { useCreateBrand, useUpdateBrand } from "../../../hooks/queries/useBrands";
 
 export function RegisterBrand({ onClose, dataSelect, action }) {
-  
-  const { insertBrand, editBrand } = useBrandsStore();
-  const { companyData } = useCompanyStore();
+  const createBrand = useCreateBrand();
+  const updateBrand = useUpdateBrand();
+  const { data: companyData } = useCurrentCompany();
   const {
     register,
     formState: { errors },
@@ -20,14 +21,14 @@ export function RegisterBrand({ onClose, dataSelect, action }) {
         description: data.name,
         
       };
-      await editBrand(p);
+      await updateBrand.mutateAsync(p);
       onClose();
     } else {
       const p = {
         _description: data.name,
-        _company_id: companyData.id,
+        _company_id: companyData?.id,
       };
-      await insertBrand(p);
+      await createBrand.mutateAsync(p);
       onClose();
     }
   }

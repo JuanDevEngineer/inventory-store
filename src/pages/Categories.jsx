@@ -1,38 +1,23 @@
-import { useQuery } from '@tanstack/react-query';
 import { SpinnerLoader } from '../components/molecules/SpinnerLoader';
+import { PageLock } from '../components/molecules/PageLock';
 import { CategoriesProTemplate } from '../components/templates/CategoriesProTemplate';
 import { useCategoriesStore } from '../store/CategoriesStore';
-import { useCompanyStore } from '../store/CompanyStore';
-import { usePermissionsStore, PageLock } from '../index';
+import { useCategories } from '../hooks/queries/useCategories';
+import { useCurrentCompany, useHasPermission } from '../hooks/queries/useSession';
 
 export function Categories() {
-  const { permissionsData } = usePermissionsStore();
-  const hasPermission = permissionsData.some((permission) =>
-    permission.modules.name.includes('Categoria de productos'),
-  );
-
-  const { fetchCategories, categoriesData, searchCategories, search } =
-    useCategoriesStore();
-  const { companyData } = useCompanyStore();
+  const hasPermission = useHasPermission('Categoria de productos');
+  const { search } = useCategoriesStore();
+  const { data: company, isPending: isCompanyPending } = useCurrentCompany();
   const {
+    data: categories = [],
     isLoading,
-    error
-  } = useQuery({
-    queryKey: ['fetch categories', companyData.id],
-    queryFn: () => fetchCategories({ company_id: companyData.id }),
-    enabled: companyData.id != null,
-  });
+    error,
+  } = useCategories(company?.id, search);
 
-  useQuery({
-    queryKey: ['search categories', search],
-    queryFn: () =>
-      searchCategories({ description: search, company_id: companyData.id }),
-    enabled: companyData.id != null,
-  });
-
-  if (!hasPermission) return <PageLock />;
+  if (hasPermission === false) return <PageLock />;
   // loading / error states
-  if (isLoading) {
+  if (isCompanyPending || isLoading) {
     return <SpinnerLoader />;
   }
   if (error) {
@@ -40,7 +25,7 @@ export function Categories() {
   }
   return (
     <>
-      <CategoriesProTemplate data={categoriesData} />
+      <CategoriesProTemplate data={categories} />
     </>
   );
 }

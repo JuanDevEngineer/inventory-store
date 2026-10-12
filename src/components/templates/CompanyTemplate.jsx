@@ -3,9 +3,6 @@ import { Header, Title, CompanyBanner } from "../../index";
 import { useState } from "react";
 export function CompanyTemplate() {
   const [state, setState] = useState(false);
-  useState(false);
-  useState("");
-  useState([]);
   return (
     <Container>
 

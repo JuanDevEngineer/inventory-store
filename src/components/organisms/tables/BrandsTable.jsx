@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { TableActionsContent, Pagination, useBrandsStore } from "../../../index";
+import { TableActionsContent, Pagination } from "../../../index";
+import { useDeleteBrand } from "../../../hooks/queries/useBrands";
 import Swal from "sweetalert2";
 import { v } from "../../../styles/variables";
 import { useState } from "react";
@@ -22,7 +23,7 @@ export function BrandsTable({
   const [, setData] = useState(data);
   const [columnFilters] = useState([]);
 
-  const { deleteBrand } = useBrandsStore();
+  const deleteBrand = useDeleteBrand();
   function handleDelete(p) {
     if (p.description === "Generica") {
       Swal.fire({
@@ -43,7 +44,7 @@ export function BrandsTable({
       confirmButtonText: "Si, eliminar",
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await deleteBrand({ id: p.id });
+        await deleteBrand.mutateAsync({ id: p.id });
       }
     });
   }

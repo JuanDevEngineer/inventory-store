@@ -1,18 +1,11 @@
 import styled from "styled-components";
 import { Document, Page, Text, View, StyleSheet, PDFViewer } from "@react-pdf/renderer";
-import { useCompanyStore, useProductsStore } from "../../../index";
-import { useQuery } from "@tanstack/react-query";
+import { useCurrentCompany } from "../../../hooks/queries/useSession";
+import { useStockBelowMinimumReport } from "../../../hooks/queries/useReports";
 
 function StockBelowMinimum() {
-  const { reportStockBelowMinimum } = useProductsStore();
-  const { companyData } = useCompanyStore();
-  const {
-    data
-  } = useQuery({
-    queryKey: ["stock below minimum report", { company_id: companyData?.id }],
-    queryFn: () => reportStockBelowMinimum({ company_id: companyData?.id }),
-    enabled: !!companyData?.id,
-  });
+  const { data: companyData } = useCurrentCompany();
+  const { data } = useStockBelowMinimumReport(companyData?.id);
 
   const styles = StyleSheet.create({
     page: { flexDirection: "row", position: "relative" },

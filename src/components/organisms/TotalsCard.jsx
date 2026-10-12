@@ -1,7 +1,8 @@
 import styled from "styled-components";
-import { v, useUsersStore, BtnCircular } from "../../index";
+import { v, BtnCircular } from "../../index";
+import { useCurrentUser } from "../../hooks/queries/useSession";
 export function TotalsCard({ color, total, title, icon }) {
-  const { userData } = useUsersStore();
+  const { data: userData } = useCurrentUser();
   return (
     <Container>
       <div className="textsContent">
@@ -10,7 +11,7 @@ export function TotalsCard({ color, total, title, icon }) {
           <b>{<v.iconArrowDown />}</b>
         </section>
         <span className="total">
-          {userData.currency} {total}
+          {userData?.currency} {total}
         </span>
       </div>
       <div className="iconContent">

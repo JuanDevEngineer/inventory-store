@@ -1,13 +1,17 @@
 import { useEffect } from 'react';
 import styled from 'styled-components';
-import { useGlobalStore } from '../../store/GlobalStore';
-import { usePermissionsStore } from '../../store/PermissionsStore';
+import { useModules } from '../../hooks/queries/useStaff';
 
-export function ModulesList({ setCheckboxes, checkboxes = [], action }) {
-  const { modulesData } = useGlobalStore();
-  const { permissionsEditData } = usePermissionsStore();
+export function ModulesList({
+  setCheckboxes,
+  checkboxes = [],
+  action,
+  userPermissions: permissionsEditData,
+}) {
+  const { data: modulesData } = useModules();
 
   useEffect(() => {
+    if (!modulesData) return;
     if (action == 'Edit') {
       let allDocs = [];
       modulesData.map((element) => {

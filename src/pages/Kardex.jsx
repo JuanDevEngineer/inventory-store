@@ -1,61 +1,24 @@
-import { useQuery } from '@tanstack/react-query';
-
 import { SpinnerLoader } from '../components/molecules/SpinnerLoader';
+import { PageLock } from '../components/molecules/PageLock';
 import { KardexTemplate } from '../components/templates/KardexTemplate';
-import { useCompanyStore } from '../store/CompanyStore';
-import { useProductsStore } from '../store/ProductsStore';
 import { useKardexStore } from '../store/KardexStore';
-import { usePermissionsStore, PageLock } from '../index';
+import { useKardex } from '../hooks/queries/useKardex';
+import { useCurrentCompany, useHasPermission } from '../hooks/queries/useSession';
 
 export function Kardex() {
-  const { permissionsData } = usePermissionsStore();
-  const hasPermission = permissionsData.some((permission) =>
-    permission.modules.name.includes('Kardex'),
-  );
-
-  const { fetchProducts, productsData, search, searchProducts } =
-    useProductsStore();
-  const { fetchKardex, searchKardex, search: kardexSearch } = useKardexStore();
-  const { companyData } = useCompanyStore();
-  const {
-    isLoading,
-    error
-  } = useQuery({
-    queryKey: ['fetch products', companyData.id],
-    queryFn: () => fetchProducts({ _company_id: companyData.id }),
-    enabled: companyData.id != null,
-  });
-
-  // product search
-  useQuery({
-    queryKey: ['search products', search],
-    queryFn: () =>
-      searchProducts({ description: search, company_id: companyData.id }),
-    enabled: companyData.id != null,
-  });
-
-  // fetch kardex
-  useQuery({
-    queryKey: ['fetch kardex', companyData.id],
-    queryFn: () => fetchKardex({ company_id: companyData.id }),
-    enabled: companyData.id != null,
-  });
-
-  // kardex search
-  useQuery({
-    queryKey: ['search kardex', kardexSearch],
-    queryFn: () =>
-      searchKardex({ search: kardexSearch, company_id: companyData.id }),
-    enabled: companyData.id != null,
-  });
+  const hasPermission = useHasPermission('Kardex');
+  const { search } = useKardexStore();
+  const { data: company, isPending: isCompanyPending } = useCurrentCompany();
+  // loaded here for the loading state; Tabs reads the same cached list
+  const { isLoading, error } = useKardex(company?.id, search);
 
   // loading / error states
-  if (isLoading) {
+  if (isCompanyPending || isLoading) {
     return <SpinnerLoader />;
   }
   if (error) {
     return <span>Error...</span>;
   }
-  if (hasPermission == false) return <PageLock state={hasPermission} />;
-  return <KardexTemplate data={productsData} />;
+  if (hasPermission === false) return <PageLock state={hasPermission} />;
+  return <KardexTemplate />;
 }

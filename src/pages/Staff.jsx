@@ -1,42 +1,19 @@
-import { useQuery } from '@tanstack/react-query';
-
 import { SpinnerLoader } from '../components/molecules/SpinnerLoader';
 import { StaffTemplate } from '../components/templates/StaffTemplate';
 import { PageLock } from '../components/molecules/PageLock';
-import { useCompanyStore } from '../store/CompanyStore';
-import { useGlobalStore } from '../store/GlobalStore';
-import { useUsersStore } from '../store/UsersStore';
-import { usePermissionsStore } from '../store/PermissionsStore';
+import { useStaffStore } from '../store/StaffStore';
+import { useStaff } from '../hooks/queries/useStaff';
+import { useCurrentCompany, useHasPermission } from '../hooks/queries/useSession';
 
 export function Staff() {
-  const { permissionsData } = usePermissionsStore();
-  const hasPermission = permissionsData.some((permission) =>
-    permission.modules.name.includes('Personal'),
-  );
+  const hasPermission = useHasPermission('Personal');
+  const { search } = useStaffStore();
+  const { data: company, isPending: isCompanyPending } = useCurrentCompany();
+  const { data: staff = [], isLoading, error } = useStaff(company?.id, search);
 
-  const { fetchAllUsers, allUsersData } = useUsersStore();
-  const { companyData } = useCompanyStore();
-  const { fetchModules } = useGlobalStore();
-
-  // fetch data
-  const {
-    isLoading,
-    error
-  } = useQuery({
-    queryKey: ['fetch all users', companyData?.id],
-    queryFn: () => fetchAllUsers({ _company_id: companyData?.id }),
-    enabled: !!companyData?.id,
-  });
-
-  // modules
-  useQuery({
-    queryKey: ['fetch modules'],
-    queryFn: fetchModules,
-  });
-
-  if (hasPermission == false) return <PageLock state={hasPermission} />;
+  if (hasPermission === false) return <PageLock state={hasPermission} />;
   // loading / error states
-  if (isLoading) {
+  if (isCompanyPending || isLoading) {
     return <SpinnerLoader />;
   }
   if (error) {
@@ -45,7 +22,7 @@ export function Staff() {
 
   return (
     <>
-      <StaffTemplate data={allUsersData} />
+      <StaffTemplate data={staff} />
     </>
   );
 }

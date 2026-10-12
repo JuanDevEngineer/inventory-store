@@ -25,7 +25,6 @@ export function RegisterTransaction({
   const { insertTransaction } = useTransactionsStore();
 
   const [status, setStatus] = useState(true);
-  useState(false);
   const [stateCategories, setStateCategories] = useState(false);
   const today = new Date();
   const {

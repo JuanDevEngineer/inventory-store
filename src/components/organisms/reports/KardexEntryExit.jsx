@@ -3,35 +3,19 @@ import { Document, Page, Text, View, StyleSheet, PDFViewer } from "@react-pdf/re
 import {
   SearchBar,
   GenericList,
-  useCompanyStore,
   useProductsStore,
 } from "../../../index";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useCurrentCompany } from "../../../hooks/queries/useSession";
+import { useProducts } from "../../../hooks/queries/useProducts";
+import { useKardexEntryExitReport } from "../../../hooks/queries/useReports";
 
 function KardexEntryExit() {
   const [stateProductList, setStateProductList] = useState(false);
-  const { reportKardexEntryExit, searchProducts, search, setSearch ,selectProduct,selectedProduct} =
-    useProductsStore();
-  const { companyData } = useCompanyStore();
-  const {
-    data
-  } = useQuery({
-    queryKey: ["kardex entry exit report", { _company_id: companyData?.id,_product_id:selectedProduct?.id }],
-    queryFn: () => reportKardexEntryExit({ _company_id: companyData?.id,_product_id:selectedProduct.id }),
-    enabled: !!companyData?.id,
-  });
-  const {
-    data: productSearchData
-  } = useQuery({
-    queryKey: [
-      "search products",
-      { company_id: companyData?.id, description: search },
-    ],
-    queryFn: () =>
-      searchProducts({ company_id: companyData?.id, description: search }),
-    enabled: !!companyData?.id,
-  });
+  const { search, setSearch, selectProduct, selectedProduct } = useProductsStore();
+  const { data: companyData } = useCurrentCompany();
+  const { data } = useKardexEntryExitReport(companyData?.id, selectedProduct?.id);
+  const { data: productSearchData } = useProducts(companyData?.id, search);
 
   const styles = StyleSheet.create({
     page: { flexDirection: "row", position: "relative" },

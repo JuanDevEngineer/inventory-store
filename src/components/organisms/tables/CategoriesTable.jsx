@@ -1,9 +1,9 @@
 import styled from "styled-components";
 import {
   TableActionsContent,
-  useCategoriesStore,
   Pagination,
 } from "../../../index";
+import { useDeleteCategory } from "../../../hooks/queries/useCategories";
 import Swal from "sweetalert2";
 import { v } from "../../../styles/variables";
 import { useState } from "react";
@@ -26,7 +26,7 @@ export function CategoriesTable({
   const [, setData] = useState(data);
   const [columnFilters] = useState([]);
 
-  const { deleteCategory } = useCategoriesStore();
+  const deleteCategory = useDeleteCategory();
   function handleDelete(p) {
     if (p.description === "General") {
       Swal.fire({
@@ -47,7 +47,7 @@ export function CategoriesTable({
       confirmButtonText: "Si, eliminar",
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await deleteCategory({ id: p.id });
+        await deleteCategory.mutateAsync({ id: p.id });
       }
     });
   }

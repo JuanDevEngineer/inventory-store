@@ -1,58 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
-
-import { useCategoriesStore } from '../store/CategoriesStore';
-import { useCompanyStore } from '../store/CompanyStore';
-import { useBrandsStore } from '../store/BrandsStore';
-import { useProductsStore } from '../store/ProductsStore';
 import { SpinnerLoader } from '../components/molecules/SpinnerLoader';
 import { ProductsTemplate } from '../components/templates/ProductsTemplate';
-import { usePermissionsStore } from '../index';
+import { useProductsStore } from '../store/ProductsStore';
+import { useProducts } from '../hooks/queries/useProducts';
+import { useCurrentCompany } from '../hooks/queries/useSession';
 
 export function Products() {
-  const { permissionsData } = usePermissionsStore();
-
-  permissionsData.some((permission) =>
-    permission.modules.name.includes('Productos'),
-  );
-
-  const { fetchProducts, productsData, search, searchProducts } =
-    useProductsStore();
-  const { fetchCategories } = useCategoriesStore();
-  const { fetchBrands } = useBrandsStore();
-  const { companyData } = useCompanyStore();
+  const { search } = useProductsStore();
+  const { data: company, isPending: isCompanyPending } = useCurrentCompany();
   const {
+    data: products = [],
     isLoading,
-    error
-  } = useQuery({
-    queryKey: ['fetch products', companyData?.id],
-    queryFn: () => fetchProducts({ _company_id: companyData?.id }),
-    enabled: !!companyData?.id,
-  });
-
-  // search
-  useQuery({
-    queryKey: ['search products', search],
-    queryFn: () =>
-      searchProducts({ description: search, company_id: companyData?.id }),
-    enabled: !!companyData?.id,
-  });
-
-  // fetch brands
-  useQuery({
-    queryKey: ['fetch brands', companyData?.id],
-    queryFn: () => fetchBrands({ company_id: companyData?.id }),
-    enabled: !!companyData?.id,
-  });
-
-  // fetch categories
-  useQuery({
-    queryKey: ['fetch categories', companyData?.id],
-    queryFn: () => fetchCategories({ company_id: companyData?.id }),
-    enabled: !!companyData?.id,
-  });
+    error,
+  } = useProducts(company?.id, search);
 
   // loading / error states
-  if (isLoading) {
+  if (isCompanyPending || isLoading) {
     return <SpinnerLoader />;
   }
   if (error) {
@@ -61,7 +23,7 @@ export function Products() {
 
   return (
     <>
-      <ProductsTemplate data={productsData} />
+      <ProductsTemplate data={products} />
     </>
   );
 }
