@@ -1,5 +1,5 @@
 {
-  "name": "control-gastos-curso",
+  "name": "ecommerce-inventory",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -14,7 +14,7 @@
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.14.10",
     "@react-pdf/renderer": "^3.4.4",
-    "@supabase/supabase-js": "^2.33.1",
+    "@supabase/postgrest-js": "^2.117.3",
     "@tanstack/react-query": "^5.0.5",
     "@tanstack/react-query-devtools": "^5.4.2",
     "@tanstack/react-table": "^8.10.7",

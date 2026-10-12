@@ -1,126 +1,125 @@
 import styled from "styled-components";
 import {
-  Btnsave,
+  BtnSave,
   v,
   useAuthStore,
   InputText,
-  useUsuariosStore,
-  Spinner,
-  SpinnerLoader,
-  RegistrarAdmin,
-  supabase,
-  FooterLogin,
- 
+  useUsersStore,
+  RegisterAdmin,
+  LoginFooter,
 } from "../../index";
 import {Device} from "../../styles/breakpoints"
-import estrellas from "../../assets/estrellasVarias.svg";
+import stars from "../../assets/stars.svg";
 import { useMutation } from "@tanstack/react-query";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import carrito from "../../assets/carrito.svg";
-import logo from "../../assets/inventarioslogo.png";
+import cart from "../../assets/cart.svg";
+import logo from "../../assets/inventory-logo.png";
 import { MdOutlineInfo } from "react-icons/md";
-import { ThemeContext } from "../../App";
+import ThemeContext from "../../context/ThemeContext";
 export function LoginTemplate() {
-  const { setTheme, theme } = useContext(ThemeContext);
+  const {
+    setTheme
+  } = useContext(ThemeContext);
   setTheme("light")
-  const { insertarUsuario } = useUsuariosStore();
+  const { insertUser } = useUsersStore();
   const { signInWithEmail } = useAuthStore();
   const [state, setState] = useState(false);
-  const [correo, setCorreo] = useState("");
-  const [pass, setPass] = useState("");
-  const [stateInicio, setStateInicio] = useState(false);
+  const [, setEmail] = useState("");
+  const [, setPassword] = useState("");
+  const [stateLoginError, setStateLoginError] = useState(false);
   const navigate = useNavigate();
-  const mutation = useMutation({
+
+  useMutation({
     mutationFn: async () => {
       const p = {
-        correo: "frank@gmail.com",
-        pass: "gTh1238",
+        email: "frank@gmail.com",
+        password: "gTh1238",
       };
-      await insertarUsuario(p);
+      await insertUser(p);
     },
   });
+
   const {
     register,
     formState: { errors },
-    handleSubmit,
-    watch,
+    handleSubmit
   } = useForm();
-  async function iniciar(data) {
+  async function handleLogin(data) {
     const response = await signInWithEmail({
-      correo: data.correo,
-      pass: data.pass,
+      email: data.email,
+      password: data.password,
     });
     if (response) {
       navigate("/");
     } else {
-      setStateInicio(!stateInicio);
+      setStateLoginError(!stateLoginError);
     }
   }
 
   return (
-    <Container imgfondo={v.imagenfondo}>
+    <Container>
       <div className="contentLogo">
         <img src={logo}></img>
         <span>StockPRO</span>
       </div>
-      <div className="bannerlateral">
-        <img src={carrito}></img>
+      <div className="side-banner">
+        <img src={cart}></img>
       </div>
 
       <div className="contentCard">
         <div className="card">
-          {state && <RegistrarAdmin setState={() => setState(!state)} />}
+          {state && <RegisterAdmin setState={() => setState(!state)} />}
 
-          <Titulo>StockPRO</Titulo>
-          {stateInicio && (
-            <TextoStateInicio>datos incorrectos</TextoStateInicio>
+          <BrandTitle>StockPRO</BrandTitle>
+          {stateLoginError && (
+            <LoginErrorText>datos incorrectos</LoginErrorText>
           )}
-          <span className="ayuda">
+          <span className="help">
             {" "}
             Puedes crear una cuenta nueva ó <br></br>solicitar a tu empleador
             una. <MdOutlineInfo />
           </span>
-          <p className="frase">Controla tu inventario.</p>
-          <form onSubmit={handleSubmit(iniciar)}>
-            <InputText icono={<v.iconoemail />}>
+          <p className="phrase">Controla tu inventario.</p>
+          <form onSubmit={handleSubmit(handleLogin)}>
+            <InputText icon={<v.iconEmail />}>
               <input
                 className="form__field"
-                onChange={(e) => setCorreo(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 type="text"
                 placeholder="email"
-                {...register("correo", {
+                {...register("email", {
                   required: true,
                 })}
               />
               <label className="form__label">email</label>
-              {errors.correo?.type === "required" && <p>Campo requerido</p>}
+              {errors.email?.type === "required" && <p>Campo requerido</p>}
             </InputText>
-            <InputText icono={<v.iconopass />}>
+            <InputText icon={<v.iconPassword />}>
               <input
                 className="form__field"
-                onChange={(e) => setPass(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 type="password"
                 placeholder="contraseña"
-                {...register("pass", {
+                {...register("password", {
                   required: true,
                 })}
               />
               <label className="form__label">pass</label>
-              {errors.pass?.type === "required" && <p>Campo requerido</p>}
+              {errors.password?.type === "required" && <p>Campo requerido</p>}
             </InputText>
             <ContainerBtn>
-              <Btnsave titulo="Iniciar" bgcolor="#fc6b32" />
-              <Btnsave
-                funcion={() => setState(!state)}
-                titulo="Crear cuenta"
+              <BtnSave title="Iniciar" bgcolor="#fc6b32" />
+              <BtnSave
+                onClick={() => setState(!state)}
+                title="Crear cuenta"
                 bgcolor="#ffffff"
               />
             </ContainerBtn>
           </form>
         </div>
-        <FooterLogin />
+        <LoginFooter />
       </div>
     </Container>
   );
@@ -150,7 +149,7 @@ const Container = styled.div`
       width: 50px;
     }
   }
-  .cuadros {
+  .grid-lines {
     transition: cubic-bezier(0.4, 0, 0.2, 1) 0.6s;
     position: absolute;
     height: 100%;
@@ -159,7 +158,7 @@ const Container = styled.div`
     transition: 0.6s;
   }
 
-  .bannerlateral {
+  .side-banner {
     background-color: #fc6b32;
     height: 100vh;
     display: flex;
@@ -172,7 +171,7 @@ const Container = styled.div`
   .contentCard {
     grid-column: 2;
     background-color: #ffffff;
-    background-image: url(${estrellas});
+    background-image: url(${stars});
     background-size: cover;
     z-index: 100;
     position: relative;
@@ -206,16 +205,16 @@ const Container = styled.div`
       img {
         width: 40%;
 
-        animation: flotar 1.5s ease-in-out infinite alternate;
+        animation: float 1.5s ease-in-out infinite alternate;
       }
     }
-    .frase {
+    .phrase {
       color: #fc6c32;
       font-size: 1.5rem;
       font-weight: 700;
       margin-bottom:30px;
     }
-    .ayuda {
+    .help {
       position: absolute;
       top: 15px;
       right: 15px;
@@ -228,14 +227,14 @@ const Container = styled.div`
         top: -100px;
         opacity: 1;
       }
-      .cuadros {
+      .grid-lines {
         transform: rotate(37deg) rotateX(5deg) rotateY(12deg) rotate(3deg)
           skew(2deg) skewY(1deg) scaleX(1.2) scaleY(1.2);
         color: red;
       }
     }
   }
-  @keyframes flotar {
+  @keyframes float {
     0% {
       transform: translate(0, 0px);
     }
@@ -247,7 +246,7 @@ const Container = styled.div`
     }
   }
 `;
-const Titulo = styled.span`
+const BrandTitle = styled.span`
   font-size: 3rem;
   font-weight: 700;
 `;
@@ -256,6 +255,6 @@ const ContainerBtn = styled.div`
   display: flex;
   justify-content: center;
 `;
-const TextoStateInicio = styled.p`
+const LoginErrorText = styled.p`
   color: #fc7575;
 `;

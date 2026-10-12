@@ -1,31 +1,39 @@
 import styled from "styled-components";
-import { Header, Btnfiltro, v,  Title, Lottieanimacion, TablaCategorias, Buscador, RegistrarMarca, TablaMarca, useMarcaStore, Btnsave, Tabs, useProductosStore, RegistrarSalidaEntrada, useKardexStore } from "../../index";
+import {
+  Header,
+  v,
+  Title,
+  SearchBar,
+  BtnSave,
+  Tabs,
+  RegisterEntryExit,
+  useKardexStore,
+} from "../../index";
 import { useState } from "react";
-import vacio from "../../assets/vacio.json";
-export function KardexTemplate({data}) {
-  const {setBuscador} = useKardexStore();
+export function KardexTemplate() {
+  const {setSearch} = useKardexStore();
   const [state, setState] = useState(false);
-  const [openRegistro, SetopenRegistro] = useState(false);
-  const [accion, setAccion] = useState("");
-  const [dataSelect, setdataSelect] = useState([]);
-  const [tipo, setTipo] = useState("");
-  function nuevaentrada() {
-    SetopenRegistro(true);
-    setTipo("entrada");
-    
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [action] = useState("");
+  const [dataSelect] = useState([]);
+  const [type, setType] = useState("");
+  function newEntry() {
+    setIsFormOpen(true);
+    setType("entrada");
+
   }
-  function nuevasalida() {
-    SetopenRegistro(true);
-    setTipo("salida");
-   
+  function newExit() {
+    setIsFormOpen(true);
+    setType("salida");
+
   }
   return (
     <Container>
-      {openRegistro && (
-        <RegistrarSalidaEntrada tipo={tipo}
+      {isFormOpen && (
+        <RegisterEntryExit type={type}
           dataSelect={dataSelect}
-          onClose={() => SetopenRegistro(!openRegistro)}
-          accion={accion}
+          onClose={() => setIsFormOpen(!isFormOpen)}
+          action={action}
         />
       )}
       <header className="header">
@@ -34,38 +42,25 @@ export function KardexTemplate({data}) {
         />
       </header>
       <section className="area1">
-        <ContentFiltro>
+        <FilterContent>
           <Title>
             Kardex
           </Title>
-          <Btnsave titulo="Entrada" bgcolor="#52de65"
-            icono={<v.iconoflechaderecha/>} funcion={nuevaentrada}/>
-          
-           <Btnsave titulo="Salida" bgcolor="#fb6661"
-             funcion={nuevasalida} 
+          <BtnSave title="Entrada" bgcolor="#52de65"
+            icon={<v.iconArrowRight/>} onClick={newEntry}/>
+
+           <BtnSave title="Salida" bgcolor="#fb6661"
+             onClick={newExit} 
             />
-        </ContentFiltro>
+        </FilterContent>
       </section>
       <section className="area2">
-        <Buscador setBuscador={setBuscador}/>
+        <SearchBar setSearch={setSearch}/>
       </section>
-    
+
       <section className="main">
          <Tabs/>
-      {/* {data.length == 0 && (
-          <Lottieanimacion
-            alto="300"
-            ancho="300"
-            animacion={vacio}
-          />
-        )}
 
-        <TablaMarca
-          data={data}
-          SetopenRegistro={SetopenRegistro}
-          setdataSelect={setdataSelect}
-          setAccion={setAccion}
-        /> */}
       </section>
     </Container>
   );
@@ -81,7 +76,7 @@ const Container = styled.div`
     "header" 100px
     "area1" 100px
     "area2" 60px
-   
+
     "main" auto;
 
   .header {
@@ -104,14 +99,14 @@ const Container = styled.div`
     justify-content:end;
 
   }
- 
+
   .main {
     margin-top:20px;
     grid-area: main;
     /* background-color: rgba(179, 46, 241, 0.14); */
   }
 `;
-const ContentFiltro = styled.div`
+const FilterContent = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content:end;

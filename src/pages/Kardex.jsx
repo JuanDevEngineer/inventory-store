@@ -1,63 +1,61 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
 
-import { useCategoriasStore } from "../store/CategoriasStore";
-import { useEmpresaStore } from "../store/EmpresaStore";
-import { SpinnerLoader } from "../components/moleculas/SpinnerLoader";
-import { ProductosTemplate } from "../components/templates/ProductosTemplate";
-import { useProductosStore } from "../store/ProductosStore";
-import { useMarcaStore } from "../store/MarcaStore";
-import { KardexTemplate } from "../components/templates/KardexTemplate";
-import { useKardexStore } from "../store/KardexStore";
-import { usePermisosStore, BloqueoPagina } from "../index";
+import { SpinnerLoader } from '../components/molecules/SpinnerLoader';
+import { KardexTemplate } from '../components/templates/KardexTemplate';
+import { useCompanyStore } from '../store/CompanyStore';
+import { useProductsStore } from '../store/ProductsStore';
+import { useKardexStore } from '../store/KardexStore';
+import { usePermissionsStore, PageLock } from '../index';
+
 export function Kardex() {
-  const { datapermisos } = usePermisosStore();
-  const statePermiso = datapermisos.some((objeto) =>
-    objeto.modulos.nombre.includes("Kardex")
+  const { permissionsData } = usePermissionsStore();
+  const hasPermission = permissionsData.some((permission) =>
+    permission.modules.name.includes('Kardex'),
   );
 
-
-  const { mostrarProductos, dataproductos, buscador, buscarProductos } =
-    useProductosStore();
+  const { fetchProducts, productsData, search, searchProducts } =
+    useProductsStore();
+  const { fetchKardex, searchKardex, search: kardexSearch } = useKardexStore();
+  const { companyData } = useCompanyStore();
   const {
-    mostrarKardex,
-    buscarKardex,
-    buscador: buscadorkardex,
-  } = useKardexStore();
-  const { mostrarMarca } = useMarcaStore();
-  const { dataempresa } = useEmpresaStore();
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["mostrar productos", dataempresa.id],
-    queryFn: () => mostrarProductos({ _id_empresa: dataempresa.id }),
-    enabled: dataempresa.id != null,
-  });
-  //buscador productos
-  const { data: buscar } = useQuery({
-    queryKey: ["buscar productos", buscador],
-    queryFn: () =>
-      buscarProductos({ descripcion: buscador, id_empresa: dataempresa.id }),
-    enabled: dataempresa.id != null,
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ['fetch products', companyData.id],
+    queryFn: () => fetchProducts({ _company_id: companyData.id }),
+    enabled: companyData.id != null,
   });
 
-  //mostrar kardex
-  const { data: datakardex } = useQuery({
-    queryKey: ["mostrar kardex", dataempresa.id],
-    queryFn: () => mostrarKardex({ id_empresa: dataempresa.id }),
-    enabled: dataempresa.id != null,
-  });
-  //buscador kardex
-  const { data: buscarkardex } = useQuery({
-    queryKey: ["buscar kardex", buscadorkardex],
+  // product search
+  useQuery({
+    queryKey: ['search products', search],
     queryFn: () =>
-      buscarKardex({ buscador: buscadorkardex, id_empresa: dataempresa.id }),
-    enabled: dataempresa.id != null,
+      searchProducts({ description: search, company_id: companyData.id }),
+    enabled: companyData.id != null,
   });
-  //respuestas
+
+  // fetch kardex
+  useQuery({
+    queryKey: ['fetch kardex', companyData.id],
+    queryFn: () => fetchKardex({ company_id: companyData.id }),
+    enabled: companyData.id != null,
+  });
+
+  // kardex search
+  useQuery({
+    queryKey: ['search kardex', kardexSearch],
+    queryFn: () =>
+      searchKardex({ search: kardexSearch, company_id: companyData.id }),
+    enabled: companyData.id != null,
+  });
+
+  // loading / error states
   if (isLoading) {
     return <SpinnerLoader />;
   }
   if (error) {
     return <span>Error...</span>;
   }
-  if (statePermiso == false) return <BloqueoPagina state={statePermiso}/>;
-  return <KardexTemplate data={dataproductos} />;
+  if (hasPermission == false) return <PageLock state={hasPermission} />;
+  return <KardexTemplate data={productsData} />;
 }

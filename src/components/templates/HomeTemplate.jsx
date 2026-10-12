@@ -1,15 +1,14 @@
-import styled from "styled-components";
-import {  BannerHome } from "../../index";
-import { useState } from "react";
+import styled from 'styled-components';
+import { HomeBanner } from '../../index';
 
 export function HomeTemplate() {
-
   return (
     <Main>
-      <BannerHome/>
+      <HomeBanner />
     </Main>
   );
 }
+
 const Main = styled.main`
   min-height: 100vh;
   width: 100%;
@@ -20,7 +19,5 @@ const Main = styled.main`
   align-items: center;
   position: relative;
   overflow: hidden;
-  font-size:26px;
-  
+  font-size: 26px;
 `;
-

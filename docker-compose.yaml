@@ -4,20 +4,40 @@ services:
     container_name: inventory-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: bdlinventarios
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-inventory}
+      # Read by database/init/00-roles.sh
+      AUTHENTICATOR_PASSWORD: ${AUTHENTICATOR_PASSWORD:-authenticator}
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-random-secret-of-32-chars-or-more}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Se ejecuta solo la primera vez (cuando el volumen está vacío)
-      - ./bdlinventarios.sql:/docker-entrypoint-initdb.d/01-bdlinventarios.sql:ro
+      # Runs only the first time (when the data volume is empty)
+      - ./database/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d bdlinventarios"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-inventory}"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # REST API over Postgres used by the frontend (src/lib/db)
+  postgrest:
+    image: postgrest/postgrest:v12.2.3
+    container_name: inventory-postgrest
+    restart: unless-stopped
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${AUTHENTICATOR_PASSWORD:-authenticator}@postgres:5432/${POSTGRES_DB:-inventory}
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET:-change-me-to-a-random-secret-of-32-chars-or-more}
+      PGRST_SERVER_PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   pgadmin:
     image: dpage/pgadmin4:latest

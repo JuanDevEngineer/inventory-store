@@ -1,8 +1,5 @@
-import styled from "styled-components";
-import { HomeTemplate} from "../index";
-export function Home() {
+import { HomeTemplate } from '../index';
 
-  return (
-   <HomeTemplate/>
-  );
+export function Home() {
+  return <HomeTemplate />;
 }
